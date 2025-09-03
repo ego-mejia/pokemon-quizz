@@ -40,6 +40,7 @@
         justify-content: center;
         min-height: 100vh;
         margin: 0;
+        touch-action: manipulation;
       }
 
       .container {
@@ -325,6 +326,44 @@
         background: linear-gradient(to bottom, #9f7aea, #805ad5);
       }
 
+      /* Controles táctiles */
+      .touch-controls {
+        position: fixed;
+        right: 20px;
+        bottom: 20px;
+        display: none;
+        flex-direction: column;
+        align-items: center;
+        gap: 5px;
+        z-index: 50;
+      }
+
+      .touch-row {
+        display: flex;
+        gap: 5px;
+      }
+
+      .touch-btn {
+        width: 60px;
+        height: 60px;
+        background-color: rgba(45, 55, 72, 0.7);
+        border: 2px solid var(--color-primary);
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--color-primary);
+        font-size: 24px;
+        user-select: none;
+        -webkit-tap-highlight-color: transparent;
+        touch-action: manipulation;
+      }
+
+      .touch-btn:active {
+        background-color: rgba(247, 212, 59, 0.3);
+        transform: scale(0.95);
+      }
+
       /* Responsive design */
       @media (max-width: 768px) {
         .game-header {
@@ -359,6 +398,18 @@
 
         .start-subtitle {
           font-size: 0.8rem;
+        }
+
+        .touch-controls {
+          display: flex;
+        }
+
+        .game-wrapper {
+          margin-bottom: 80px;
+        }
+
+        .container {
+          padding-bottom: 100px;
         }
       }
 
@@ -469,6 +520,18 @@
       </div>
     </div>
 
+    <!-- Controles táctiles -->
+    <div class="touch-controls">
+      <div class="touch-row">
+        <div class="touch-btn" id="up-btn">↑</div>
+      </div>
+      <div class="touch-row">
+        <div class="touch-btn" id="left-btn">←</div>
+        <div class="touch-btn" id="down-btn">↓</div>
+        <div class="touch-btn" id="right-btn">→</div>
+      </div>
+    </div>
+
     <!-- Modal de quiz -->
     <div id="quiz-modal" class="modal">
       <div class="modal-content">
@@ -547,6 +610,12 @@
       const menuButton = document.getElementById("menu-button");
       const gameOverStats = document.getElementById("game-over-stats");
       const particlesContainer = document.getElementById("particles");
+
+      // Controles táctiles
+      const upBtn = document.getElementById("up-btn");
+      const downBtn = document.getElementById("down-btn");
+      const leftBtn = document.getElementById("left-btn");
+      const rightBtn = document.getElementById("right-btn");
 
       // ===== ESTADO DEL JUEGO =====
       const gameState = {
@@ -1116,7 +1185,7 @@
               4 * scale,
               0,
               0,
-              2 * Math.PI
+              Math.PI * 2
             );
           } else {
             ctx.ellipse(
@@ -1126,7 +1195,7 @@
               4 * scale,
               0,
               0,
-              2 * Math.PI
+              Math.PI * 2
             );
           }
           ctx.fill();
@@ -1933,6 +2002,28 @@
         gameState.gameStarted = false;
       });
 
+      // Controles táctiles
+      upBtn.addEventListener("touchstart", (e) => {
+        e.preventDefault();
+        movePlayer(0, -1);
+      });
+
+      downBtn.addEventListener("touchstart", (e) => {
+        e.preventDefault();
+        movePlayer(0, 1);
+      });
+
+      leftBtn.addEventListener("touchstart", (e) => {
+        e.preventDefault();
+        movePlayer(-1, 0);
+      });
+
+      rightBtn.addEventListener("touchstart", (e) => {
+        e.preventDefault();
+        movePlayer(1, 0);
+      });
+
+      // Controles de teclado
       document.addEventListener("keydown", (e) => {
         if (gameState.gamePaused || !gameState.gameStarted) return;
 
