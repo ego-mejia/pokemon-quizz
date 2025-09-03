@@ -1,0 +1,1989 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pikachu's Pronoun Adventure</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --color-primary: #f7d43b;
+        --color-secondary: #805ad5;
+        --color-accent: #f56565;
+        --color-dark: #1a202c;
+        --color-darker: #0f141e;
+        --color-light: #e2e8f0;
+      }
+
+      body {
+        font-family: "Press Start 2P", cursive;
+        background-color: var(--color-darker);
+        background-image: radial-gradient(
+            circle at 25% 25%,
+            rgba(45, 55, 72, 0.4) 1px,
+            transparent 1px
+          ),
+          radial-gradient(
+            circle at 75% 75%,
+            rgba(45, 55, 72, 0.3) 1px,
+            transparent 1px
+          );
+        background-size: 30px 30px;
+        color: var(--color-light);
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        margin: 0;
+      }
+
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 1rem;
+      }
+
+      .game-wrapper {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 1.5rem;
+        position: relative;
+      }
+
+      .game-header {
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.5rem 1rem;
+        background-color: rgba(37, 46, 61, 0.8);
+        border: 4px solid #636e82;
+        border-radius: 0.5rem;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+      }
+
+      .game-title {
+        color: var(--color-primary);
+        text-shadow: 2px 2px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000,
+          -1px 1px 0 #000;
+        font-size: 1.5rem;
+        margin: 0;
+      }
+
+      .stats-panel {
+        display: flex;
+        gap: 1.5rem;
+      }
+
+      .stat-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        background-color: rgba(45, 55, 72, 0.7);
+        padding: 0.5rem 0.8rem;
+        border-radius: 0.5rem;
+        border: 2px solid #4a5568;
+      }
+
+      .stat-label {
+        font-size: 0.6rem;
+        color: #a0aec0;
+        margin-bottom: 0.3rem;
+      }
+
+      .stat-value {
+        font-size: 0.9rem;
+      }
+
+      .evolution-name {
+        color: var(--color-primary);
+      }
+
+      .progress-container {
+        width: 100%;
+        background-color: #4a5568;
+        border-radius: 9999px;
+        height: 1rem;
+        border: 2px solid #718096;
+        padding: 2px;
+        margin-top: 0.3rem;
+      }
+
+      .progress-bar {
+        height: 100%;
+        border-radius: 9999px;
+        transition: width 0.5s ease-in-out;
+      }
+
+      #health-bar {
+        background: linear-gradient(to right, #ef4444, #f87171);
+      }
+
+      #xp-bar {
+        background: linear-gradient(to right, #22c55e, #4ade80);
+      }
+
+      .game-area {
+        position: relative;
+      }
+
+      canvas {
+        background-color: #2d3748;
+        border-radius: 0.5rem;
+        border: 4px solid #4a5568;
+        box-shadow: 0 0 25px rgba(0, 0, 0, 0.6);
+        image-rendering: pixelated;
+      }
+
+      .controls-help {
+        text-align: center;
+        font-size: 0.7rem;
+        color: #a0aec0;
+        background-color: rgba(37, 46, 61, 0.8);
+        padding: 0.5rem;
+        border-radius: 0.5rem;
+        border: 2px solid #4a5568;
+      }
+
+      /* Modal mejorado */
+      .modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.85);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 100;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.3s ease;
+      }
+
+      .modal.active {
+        opacity: 1;
+        pointer-events: all;
+      }
+
+      .modal-content {
+        background-color: #2d3748;
+        border: 4px solid var(--color-primary);
+        padding: 2rem;
+        border-radius: 1rem;
+        width: 90%;
+        max-width: 600px;
+        text-align: center;
+        box-shadow: 0 0 30px rgba(247, 212, 59, 0.4);
+        transform: scale(0.9);
+        transition: transform 0.3s ease;
+      }
+
+      .modal.active .modal-content {
+        transform: scale(1);
+      }
+
+      .modal-title {
+        color: var(--color-primary);
+        font-size: 1.5rem;
+        margin-bottom: 1.5rem;
+        text-shadow: 2px 2px 0 #000;
+      }
+
+      .modal-question {
+        font-size: 1.1rem;
+        line-height: 1.6;
+        margin-bottom: 1.5rem;
+        color: var(--color-light);
+        background-color: rgba(45, 55, 72, 0.7);
+        padding: 1.2rem;
+        border-radius: 0.5rem;
+        border: 2px solid #4a5568;
+      }
+
+      .modal-options {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.8rem;
+      }
+
+      .modal-option {
+        background: linear-gradient(to bottom, #4a5568, #2d3748);
+        color: #e2e8f0;
+        font-family: "Press Start 2P", cursive;
+        border: 2px solid #718096;
+        padding: 1rem;
+        border-radius: 0.5rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        font-size: 0.9rem;
+      }
+
+      .modal-option:hover {
+        background: linear-gradient(to bottom, #718096, #4a5568);
+        transform: translateY(-3px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        border-color: var(--color-primary);
+      }
+
+      .modal-option:active {
+        transform: translateY(0);
+      }
+
+      /* Mensajes de notificación */
+      .notification {
+        position: fixed;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        background-color: rgba(45, 55, 72, 0.95);
+        color: white;
+        padding: 1rem 2rem;
+        border-radius: 0.5rem;
+        border: 2px solid var(--color-primary);
+        z-index: 101;
+        opacity: 0;
+        transition: opacity 0.5s;
+        pointer-events: none;
+        text-align: center;
+        max-width: 90%;
+      }
+
+      .notification.show {
+        opacity: 1;
+      }
+
+      /* Menú de inicio */
+      #start-menu {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 2rem;
+      }
+
+      .start-title {
+        font-size: 2.5rem;
+        color: var(--color-primary);
+        text-shadow: 3px 3px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000,
+          -1px 1px 0 #000;
+        text-align: center;
+        margin-bottom: 1rem;
+      }
+
+      .start-subtitle {
+        font-size: 1rem;
+        color: var(--color-light);
+        text-align: center;
+        margin-bottom: 2rem;
+        line-height: 1.6;
+      }
+
+      .menu-buttons {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        width: 100%;
+        max-width: 300px;
+      }
+
+      .menu-button {
+        background: linear-gradient(to bottom, var(--color-primary), #e6b400);
+        color: #2d3748;
+        border: none;
+        padding: 1rem;
+        border-radius: 0.5rem;
+        font-family: "Press Start 2P", cursive;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        border: 2px solid #2d3748;
+        font-size: 0.9rem;
+      }
+
+      .menu-button:hover {
+        background: linear-gradient(to bottom, #ffde5c, #f7d43b);
+        transform: translateY(-3px);
+        box-shadow: 0 5px 15px rgba(247, 212, 59, 0.4);
+      }
+
+      .menu-button:active {
+        transform: translateY(0);
+      }
+
+      .menu-button.secondary {
+        background: linear-gradient(to bottom, #805ad5, #6b46c1);
+        color: white;
+      }
+
+      .menu-button.secondary:hover {
+        background: linear-gradient(to bottom, #9f7aea, #805ad5);
+      }
+
+      /* Responsive design */
+      @media (max-width: 768px) {
+        .game-header {
+          flex-direction: column;
+          gap: 1rem;
+        }
+
+        .stats-panel {
+          width: 100%;
+          justify-content: space-around;
+        }
+
+        .stat-item {
+          padding: 0.4rem 0.6rem;
+        }
+
+        .stat-label {
+          font-size: 0.5rem;
+        }
+
+        .stat-value {
+          font-size: 0.7rem;
+        }
+
+        .modal-options {
+          grid-template-columns: 1fr;
+        }
+
+        .start-title {
+          font-size: 1.8rem;
+        }
+
+        .start-subtitle {
+          font-size: 0.8rem;
+        }
+      }
+
+      /* Animaciones */
+      @keyframes pulse {
+        0% {
+          transform: scale(1);
+        }
+        50% {
+          transform: scale(1.05);
+        }
+        100% {
+          transform: scale(1);
+        }
+      }
+
+      @keyframes shake {
+        0%,
+        100% {
+          transform: translateX(0);
+        }
+        10%,
+        30%,
+        50%,
+        70%,
+        90% {
+          transform: translateX(-5px);
+        }
+        20%,
+        40%,
+        60%,
+        80% {
+          transform: translateX(5px);
+        }
+      }
+
+      .pulse {
+        animation: pulse 0.5s ease-in-out;
+      }
+
+      .shake {
+        animation: shake 0.5s ease-in-out;
+      }
+
+      /* Efectos de partículas */
+      .particles {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        z-index: 10;
+      }
+
+      .particle {
+        position: absolute;
+        background-color: var(--color-primary);
+        border-radius: 50%;
+        pointer-events: none;
+        opacity: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="game-wrapper">
+        <div class="game-header">
+          <h1 class="game-title">Pikachu's Pronoun Adventure</h1>
+          <div class="stats-panel">
+            <div class="stat-item">
+              <div class="stat-label">LVL</div>
+              <div class="stat-value" id="level">1</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-label">POKÉMON</div>
+              <div class="stat-value evolution-name" id="evolution-name">
+                Pichu
+              </div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-label">HP</div>
+              <div class="progress-container">
+                <div
+                  id="health-bar"
+                  class="progress-bar"
+                  style="width: 100%"
+                ></div>
+              </div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-label">XP</div>
+              <div class="progress-container">
+                <div id="xp-bar" class="progress-bar" style="width: 0%"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="game-area">
+          <canvas id="gameCanvas" width="512" height="384"></canvas>
+          <div class="particles" id="particles"></div>
+        </div>
+
+        <div class="controls-help">
+          Use Arrow Keys to move. Touch an enemy to start a lesson!
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal de quiz -->
+    <div id="quiz-modal" class="modal">
+      <div class="modal-content">
+        <h2 class="modal-title">Grammar Challenge!</h2>
+        <p id="quiz-question" class="modal-question">
+          Question text goes here.
+        </p>
+        <div id="quiz-options" class="modal-options">
+          <!-- Buttons will be generated by JS -->
+        </div>
+      </div>
+    </div>
+
+    <!-- Menú de inicio -->
+    <div id="start-menu" class="modal active">
+      <div class="modal-content">
+        <h1 class="start-title">Pikachu's Pronoun Adventure</h1>
+        <p class="start-subtitle">
+          Help Pikachu evolve by mastering English pronouns!<br />Defeat
+          enemies, answer grammar questions, and become the ultimate Pokémon!
+        </p>
+        <div class="menu-buttons">
+          <button id="start-button" class="menu-button">Start Game</button>
+          <button id="continue-button" class="menu-button secondary">
+            Continue Game
+          </button>
+          <button id="help-button" class="menu-button secondary">
+            How to Play
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pantalla de game over -->
+    <div id="game-over-modal" class="modal">
+      <div class="modal-content">
+        <h2 class="modal-title">Game Over!</h2>
+        <p class="modal-question" id="game-over-stats">
+          You reached level 1 and earned 0 XP
+        </p>
+        <div class="menu-buttons">
+          <button id="restart-button" class="menu-button">Play Again</button>
+          <button id="menu-button" class="menu-button secondary">
+            Main Menu
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Notificación -->
+    <div id="notification" class="notification"></div>
+
+    <script>
+      // ===== CONSTANTES Y CONFIGURACIÓN =====
+      const canvas = document.getElementById("gameCanvas");
+      const ctx = canvas.getContext("2d");
+      const TILE_SIZE = 32;
+      const MAP_COLS = canvas.width / TILE_SIZE;
+      const MAP_ROWS = canvas.height / TILE_SIZE;
+
+      // Elementos de UI
+      const levelUI = document.getElementById("level");
+      const evolutionNameUI = document.getElementById("evolution-name");
+      const healthBarUI = document.getElementById("health-bar");
+      const xpBarUI = document.getElementById("xp-bar");
+      const quizModal = document.getElementById("quiz-modal");
+      const quizQuestionUI = document.getElementById("quiz-question");
+      const quizOptionsUI = document.getElementById("quiz-options");
+      const notification = document.getElementById("notification");
+      const startMenu = document.getElementById("start-menu");
+      const startButton = document.getElementById("start-button");
+      const continueButton = document.getElementById("continue-button");
+      const helpButton = document.getElementById("help-button");
+      const gameOverModal = document.getElementById("game-over-modal");
+      const restartButton = document.getElementById("restart-button");
+      const menuButton = document.getElementById("menu-button");
+      const gameOverStats = document.getElementById("game-over-stats");
+      const particlesContainer = document.getElementById("particles");
+
+      // ===== ESTADO DEL JUEGO =====
+      const gameState = {
+        player: {
+          x: 2,
+          y: 2,
+          level: 1,
+          xp: 0,
+          evolution: 0,
+          hp: 100,
+          maxHp: 100,
+        },
+        currentLevelNumber: 1,
+        currentLevelData: {},
+        enemies: [],
+        isMoving: false,
+        bossState: "inactive",
+        pillars: [],
+        projectiles: [],
+        bossAttackTimer: 0,
+        bossStunTimer: 0,
+        gameStarted: false,
+        gamePaused: false,
+      };
+
+      let currentEncounter = {
+        enemy: null,
+        index: -1,
+        isBossFight: false,
+        questionsToWin: 0,
+        questionsAnswered: 0,
+      };
+
+      // ===== DATOS DEL JUEGO =====
+      const evolutions = [
+        {
+          name: "Pichu",
+          color: "#F7D43B",
+          earColor: "#2D3748",
+          cheekColor: "#F56565",
+          scale: 0.9,
+        },
+        {
+          name: "Pikachu",
+          color: "#F7D43B",
+          earColor: "#2D3748",
+          cheekColor: "#F56565",
+          scale: 1.0,
+        },
+        {
+          name: "Raichu",
+          color: "#F08030",
+          earColor: "#4C3B29",
+          cheekColor: "#F7D43B",
+          scale: 1.1,
+        },
+        {
+          name: "A-Raichu",
+          color: "#A9855A",
+          earColor: "#4C3B29",
+          cheekColor: "#63B3ED",
+          scale: 1.1,
+        },
+      ];
+
+      const biomes = ["forest", "mountain", "lava", "arctic", "ocean"];
+      const biomeData = {
+        forest: {
+          tiles: {
+            0: "#5D914D",
+            1: "#4A5568",
+            next: "#8B4513",
+            prev: "#663300",
+            locked: "#3A3F4B",
+          },
+          enemies: ["serpent", "gassy"],
+        },
+        mountain: {
+          tiles: {
+            0: "#A0AEC0",
+            1: "#4A5568",
+            next: "#E53E3E",
+            prev: "#8B4513",
+            locked: "#3A3F4B",
+          },
+          enemies: ["rocky", "serpent"],
+        },
+        lava: {
+          tiles: {
+            0: "#2D3748",
+            1: "#C53030",
+            next: "#EDF2F7",
+            prev: "#8B4513",
+            locked: "#3A3F4B",
+          },
+          enemies: ["gassy", "rocky"],
+        },
+        arctic: {
+          tiles: {
+            0: "#EDF2F7",
+            1: "#A0AEC0",
+            next: "#3182CE",
+            prev: "#E53E3E",
+            locked: "#3A3F4B",
+          },
+          enemies: ["icy", "rocky"],
+        },
+        ocean: {
+          tiles: {
+            0: "#3182CE",
+            1: "#4299E1",
+            next: "#5D914D",
+            prev: "#A0AEC0",
+            locked: "#3A3F4B",
+          },
+          enemies: ["watery", "icy"],
+        },
+      };
+
+      const questions = [
+        {
+          level: 1,
+          text: "I ___ a creature.",
+          options: ["am", "is", "are"],
+          correct: "am",
+        },
+        {
+          level: 1,
+          text: "You ___ a trainer.",
+          options: ["am", "is", "are"],
+          correct: "are",
+        },
+        {
+          level: 1,
+          text: "He ___ strong.",
+          options: ["am", "is", "are"],
+          correct: "is",
+        },
+        {
+          level: 2,
+          text: "She ___ fast.",
+          options: ["am", "is", "are"],
+          correct: "is",
+        },
+        {
+          level: 2,
+          text: "It ___ a sunny day.",
+          options: ["am", "is", "are"],
+          correct: "is",
+        },
+        {
+          level: 2,
+          text: "We ___ a team.",
+          options: ["am", "is", "are"],
+          correct: "are",
+        },
+        {
+          level: 2,
+          text: "They ___ ready.",
+          options: ["am", "is", "are"],
+          correct: "are",
+        },
+        {
+          level: 3,
+          text: "___ I dreaming?",
+          options: ["Am", "Is", "Are"],
+          correct: "Am",
+        },
+        {
+          level: 3,
+          text: "___ you okay?",
+          options: ["Am", "Is", "Are"],
+          correct: "Are",
+        },
+        {
+          level: 4,
+          text: "I ___ not tired.",
+          options: ["am", "is", "are"],
+          correct: "am",
+        },
+        {
+          level: 4,
+          text: "She ___ not from here.",
+          options: ["am", "is", "are"],
+          correct: "is",
+        },
+        {
+          level: 5,
+          text: "___ they your friends?",
+          options: ["Am", "Is", "Are"],
+          correct: "Are",
+        },
+        {
+          level: 5,
+          text: "He and I ___ going.",
+          options: ["am", "is", "are"],
+          correct: "are",
+        },
+        {
+          level: 6,
+          text: "The cat ___ sleeping.",
+          options: ["am", "is", "are"],
+          correct: "is",
+        },
+        {
+          level: 6,
+          text: "The dogs ___ barking.",
+          options: ["am", "is", "are"],
+          correct: "are",
+        },
+        {
+          level: 7,
+          text: "Where ___ we?",
+          options: ["am", "is", "are"],
+          correct: "are",
+        },
+        {
+          level: 7,
+          text: "What ___ its name?",
+          options: ["am", "is", "are"],
+          correct: "is",
+        },
+        {
+          level: 8,
+          text: "Neither he nor she ___ happy.",
+          options: ["am", "is", "are"],
+          correct: "is",
+        },
+        {
+          level: 8,
+          text: "My family ___ very large.",
+          options: ["am", "is", "are"],
+          correct: "is",
+        },
+        {
+          level: 9,
+          text: "The news ___ on at 6.",
+          options: ["am", "is", "are"],
+          correct: "is",
+        },
+        {
+          level: 9,
+          text: "The scissors ___ in the drawer.",
+          options: ["am", "is", "are"],
+          correct: "are",
+        },
+        {
+          level: 10,
+          text: "Each of the students ___ responsible.",
+          options: ["am", "is", "are"],
+          correct: "is",
+        },
+        {
+          level: 10,
+          text: "One of my sisters ___ going on a trip.",
+          options: ["am", "is", "are"],
+          correct: "is",
+        },
+      ];
+
+      // ===== FUNCIONES DE UTILIDAD =====
+      function showNotification(text, duration = 2000) {
+        notification.textContent = text;
+        notification.classList.add("show");
+
+        setTimeout(() => {
+          notification.classList.remove("show");
+        }, duration);
+      }
+
+      function createParticles(x, y, color, count = 10) {
+        for (let i = 0; i < count; i++) {
+          const particle = document.createElement("div");
+          particle.className = "particle";
+          particle.style.width = `${Math.random() * 5 + 2}px`;
+          particle.style.height = particle.style.width;
+          particle.style.backgroundColor = color;
+          particle.style.left = `${x}px`;
+          particle.style.top = `${y}px`;
+
+          const angle = Math.random() * Math.PI * 2;
+          const speed = Math.random() * 3 + 2;
+          const size = parseInt(particle.style.width);
+
+          particlesContainer.appendChild(particle);
+
+          // Animate particle
+          const animation = particle.animate(
+            [
+              {
+                opacity: 1,
+                transform: `translate(0, 0)`,
+              },
+              {
+                opacity: 0,
+                transform: `translate(${Math.cos(angle) * speed * 20}px, ${
+                  Math.sin(angle) * speed * 20
+                }px)`,
+              },
+            ],
+            {
+              duration: Math.random() * 800 + 500,
+              easing: "cubic-bezier(0, .9, .57, 1)",
+            }
+          );
+
+          animation.onfinish = () => {
+            particlesContainer.removeChild(particle);
+          };
+        }
+      }
+
+      function saveGame() {
+        const saveData = {
+          player: gameState.player,
+          currentLevelNumber: gameState.currentLevelNumber,
+        };
+        localStorage.setItem("pikachuAdventureSave", JSON.stringify(saveData));
+      }
+
+      function loadGame() {
+        const saveData = localStorage.getItem("pikachuAdventureSave");
+        if (saveData) {
+          const data = JSON.parse(saveData);
+          gameState.player = data.player;
+          gameState.currentLevelNumber = data.currentLevelNumber;
+          return true;
+        }
+        return false;
+      }
+
+      function resetGame() {
+        gameState.player = {
+          x: 2,
+          y: 2,
+          level: 1,
+          xp: 0,
+          evolution: 0,
+          hp: 100,
+          maxHp: 100,
+        };
+        gameState.currentLevelNumber = 1;
+        localStorage.removeItem("pikachuAdventureSave");
+        loadLevel(gameState.currentLevelNumber);
+        updateUI();
+        gameState.gameStarted = true;
+        gameState.gamePaused = false;
+      }
+
+      // ===== FUNCIONES DEL JUEGO =====
+      const enemySprites = {
+        rocky: (e) => {
+          const p = e.x * TILE_SIZE,
+            t = e.y * TILE_SIZE;
+          ctx.fillStyle = "#A0AEC0";
+          ctx.beginPath();
+          ctx.arc(p + 6, t + 18, 6, 0, 2 * Math.PI);
+          ctx.fill();
+          ctx.beginPath();
+          ctx.arc(p + 26, t + 18, 6, 0, 2 * Math.PI);
+          ctx.fill();
+          ctx.fillStyle = "#718096";
+          ctx.beginPath();
+          ctx.arc(p + 16, t + 16, 12, 0, 2 * Math.PI);
+          ctx.fill();
+          ctx.fillStyle = "#2D3748";
+          ctx.beginPath();
+          ctx.moveTo(p + 10, t + 12);
+          ctx.lineTo(p + 14, t + 16);
+          ctx.lineTo(p + 10, t + 16);
+          ctx.closePath();
+          ctx.fill();
+          ctx.beginPath();
+          ctx.moveTo(p + 22, t + 12);
+          ctx.lineTo(p + 18, t + 16);
+          ctx.lineTo(p + 22, t + 16);
+          ctx.closePath();
+          ctx.fill();
+          ctx.strokeStyle = "#2D3748";
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.arc(p + 16, t + 20, 4, 0, Math.PI);
+          ctx.stroke();
+        },
+        gassy: (e) => {
+          const p = e.x * TILE_SIZE,
+            t = e.y * TILE_SIZE;
+          const auraSize = 14 + Math.sin(Date.now() / 250) * 2;
+          ctx.fillStyle = `rgba(128, 90, 213, ${
+            0.4 + Math.sin(Date.now() / 200) * 0.2
+          })`;
+          ctx.beginPath();
+          ctx.arc(p + 16, t + 16, auraSize, 0, 2 * Math.PI);
+          ctx.fill();
+          ctx.fillStyle = "#2D3748";
+          ctx.beginPath();
+          ctx.arc(p + 16, t + 16, 11, 0, 2 * Math.PI);
+          ctx.fill();
+          ctx.fillStyle = "#FFF";
+          ctx.beginPath();
+          ctx.moveTo(p + 10, t + 14);
+          ctx.lineTo(p + 16, t + 10);
+          ctx.lineTo(p + 16, t + 18);
+          ctx.closePath();
+          ctx.fill();
+          ctx.beginPath();
+          ctx.moveTo(p + 22, t + 14);
+          ctx.lineTo(p + 16, t + 10);
+          ctx.lineTo(p + 16, t + 18);
+          ctx.closePath();
+          ctx.fill();
+          ctx.fillStyle = "#000";
+          ctx.fillRect(p + 12, t + 13, 3, 3);
+          ctx.fillRect(p + 17, t + 13, 3, 3);
+        },
+        serpent: (e) => {
+          const p = e.x * TILE_SIZE,
+            t = e.y * TILE_SIZE;
+          const sway = Math.sin(Date.now() / 300) * 2;
+          ctx.fillStyle = "#805AD5";
+          ctx.beginPath();
+          ctx.arc(p + 16 + sway, t + 24, 5, 0, 2 * Math.PI);
+          ctx.fill();
+          ctx.beginPath();
+          ctx.arc(p + 16 - sway, t + 18, 6, 0, 2 * Math.PI);
+          ctx.fill();
+          ctx.beginPath();
+          ctx.arc(p + 16 + sway, t + 12, 8, 0, 2 * Math.PI);
+          ctx.fill();
+          ctx.fillStyle = "#F7D43B";
+          ctx.beginPath();
+          ctx.ellipse(p + 16 + sway, t + 14, 6, 2, 0, 0, 2 * Math.PI);
+          ctx.fill();
+          ctx.fillStyle = "#000";
+          ctx.beginPath();
+          ctx.moveTo(p + 12 + sway, t + 10);
+          ctx.lineTo(p + 16 + sway, t + 12);
+          ctx.lineTo(p + 12 + sway, t + 14);
+          ctx.closePath();
+          ctx.fill();
+          ctx.beginPath();
+          ctx.moveTo(p + 20 + sway, t + 10);
+          ctx.lineTo(p + 16 + sway, t + 12);
+          ctx.lineTo(p + 20 + sway, t + 14);
+          ctx.closePath();
+          ctx.fill();
+        },
+        icy: (e) => {
+          const p = e.x * TILE_SIZE,
+            t = e.y * TILE_SIZE;
+          ctx.fillStyle = "#90CDF4";
+          ctx.beginPath();
+          ctx.moveTo(p + 4, t + 18);
+          ctx.lineTo(p + 28, t + 18);
+          ctx.lineTo(p + 24, t + 28);
+          ctx.lineTo(p + 8, t + 28);
+          ctx.closePath();
+          ctx.fill();
+          ctx.fillStyle = "#EBF8FF";
+          ctx.beginPath();
+          ctx.moveTo(p + 16, t + 6);
+          ctx.lineTo(p + 28, t + 18);
+          ctx.lineTo(p + 4, t + 18);
+          ctx.closePath();
+          ctx.fill();
+          ctx.strokeStyle = "#BEE3F8";
+          ctx.lineWidth = 1.5;
+          ctx.beginPath();
+          ctx.moveTo(p + 16, t + 6);
+          ctx.lineTo(p + 16, t + 18);
+          ctx.stroke();
+          ctx.fillStyle = "#F7D43B";
+          ctx.beginPath();
+          ctx.arc(p + 12, t + 18, 3, 0, Math.PI, true);
+          ctx.fill();
+          ctx.beginPath();
+          ctx.arc(p + 20, t + 18, 3, 0, Math.PI, true);
+          ctx.fill();
+        },
+        watery: (e) => {
+          const p = e.x * TILE_SIZE,
+            t = e.y * TILE_SIZE;
+          const sway = Math.sin(Date.now() / 350) * 1;
+          ctx.fillStyle = "#D6BCFA";
+          ctx.beginPath();
+          ctx.moveTo(p + 4, t + 12);
+          ctx.lineTo(p + 8, t + 8);
+          ctx.lineTo(p + 10, t + 14);
+          ctx.closePath();
+          ctx.fill();
+          ctx.beginPath();
+          ctx.moveTo(p + 28, t + 12);
+          ctx.lineTo(p + 24, t + 8);
+          ctx.lineTo(p + 22, t + 14);
+          ctx.closePath();
+          ctx.fill();
+          ctx.fillStyle = "#63B3ED";
+          ctx.beginPath();
+          ctx.ellipse(p + 16, t + 20, 10, 8, 0, 0, 2 * Math.PI);
+          ctx.fill();
+          ctx.beginPath();
+          ctx.arc(p + 16, t + 14, 9, 0, 2 * Math.PI);
+          ctx.fill();
+          ctx.fillStyle = "#2D3748";
+          ctx.beginPath();
+          ctx.arc(p + 13, t + 14, 1.5, 0, 2 * Math.PI);
+          ctx.fill();
+          ctx.beginPath();
+          ctx.arc(p + 19, t + 14, 1.5, 0, 2 * Math.PI);
+          ctx.fill();
+          ctx.strokeStyle = "#2D3748";
+          ctx.lineWidth = 1.5;
+          ctx.beginPath();
+          ctx.moveTo(p + 14, t + 18 + sway);
+          ctx.lineTo(p + 18, t + 18 - sway);
+          ctx.stroke();
+        },
+        boss: (e) => {
+          const p = e.x * TILE_SIZE,
+            t = e.y * TILE_SIZE;
+          let scale = 1;
+          if (
+            gameState.bossState === "attacking" ||
+            gameState.bossState === "stunned"
+          )
+            scale = 1.3;
+          const size = 15 * scale;
+          const bob =
+            Math.sin(Date.now() / 300) *
+            (gameState.bossState === "stunned" ? 4 : 2);
+          // Shadow
+          ctx.fillStyle = "rgba(0,0,0,0.3)";
+          ctx.beginPath();
+          ctx.ellipse(p + 16, t + 30, 14 * scale, 5 * scale, 0, 0, 2 * Math.PI);
+          ctx.fill();
+          const yOff = t + bob;
+          // Body
+          ctx.fillStyle =
+            gameState.bossState === "stunned" ? "#718096" : "#44337A";
+          ctx.beginPath();
+          ctx.arc(p + 16, yOff + 16, size, 0, 2 * Math.PI);
+          ctx.fill();
+          // Eye
+          ctx.fillStyle =
+            gameState.bossState === "stunned" ? "#F7D43B" : "#E53E3E";
+          ctx.beginPath();
+          ctx.ellipse(
+            p + 16,
+            yOff + 16,
+            5 * scale,
+            7 * scale,
+            0,
+            0,
+            2 * Math.PI
+          );
+          ctx.fill();
+          // Pupil
+          ctx.fillStyle = "#000";
+          ctx.beginPath();
+          if (gameState.bossState === "stunned") {
+            // Dizzy eyes
+            const angle = Date.now() / 100;
+            ctx.ellipse(
+              p + 16 + Math.cos(angle) * 2 * scale,
+              yOff + 16 + Math.sin(angle) * 2 * scale,
+              2 * scale,
+              4 * scale,
+              0,
+              0,
+              2 * Math.PI
+            );
+          } else {
+            ctx.ellipse(
+              p + 16,
+              yOff + 16,
+              2 * scale,
+              4 * scale,
+              0,
+              0,
+              2 * Math.PI
+            );
+          }
+          ctx.fill();
+        },
+      };
+
+      function generateLevel(levelNum) {
+        const biomeName = biomes[(levelNum - 1) % biomes.length];
+        const data = {
+          map: Array(MAP_ROWS)
+            .fill(0)
+            .map(() => Array(MAP_COLS).fill(0)),
+          tiles: biomeData[biomeName].tiles,
+          startPos: { x: 0, y: 0 },
+          enemies: [],
+        };
+
+        for (let y = 0; y < MAP_ROWS; y++) {
+          for (let x = 0; x < MAP_COLS; x++) {
+            if (x == 0 || x == MAP_COLS - 1 || y == 0 || y == MAP_ROWS - 1)
+              data.map[y][x] = 1;
+          }
+        }
+
+        const nextDoorX = Math.floor(MAP_COLS / 2);
+        data.map[MAP_ROWS - 1][nextDoorX] = "next";
+        if (levelNum > 1) data.map[0][nextDoorX] = "prev";
+        data.startPos = { x: nextDoorX, y: levelNum > 1 ? 1 : MAP_ROWS - 2 };
+
+        if (levelNum % 5 === 0) {
+          // Boss level
+          data.enemies.push({
+            x: Math.floor(MAP_COLS / 2),
+            y: Math.floor(MAP_ROWS / 2),
+            type: "boss",
+          });
+
+          gameState.bossState = "inactive";
+          gameState.pillars = [];
+          gameState.projectiles = [];
+
+          const pillarPositions = [
+            { x: 3, y: 3 },
+            { x: MAP_COLS - 4, y: 3 },
+            { x: 3, y: MAP_ROWS - 4 },
+            { x: MAP_COLS - 4, y: MAP_ROWS - 4 },
+          ];
+
+          pillarPositions.forEach((pos) => {
+            data.map[pos.y][pos.x] = 0;
+            gameState.pillars.push({ x: pos.x, y: pos.y, activated: false });
+          });
+        } else {
+          // Regular level
+          const doorNextPos = { x: nextDoorX, y: MAP_ROWS - 2 };
+          const doorPrevPos = { x: nextDoorX, y: 1 };
+
+          for (let i = 0; i < 25 + levelNum * 2; i++) {
+            const x = Math.floor(Math.random() * (MAP_COLS - 2)) + 1;
+            const y = Math.floor(Math.random() * (MAP_ROWS - 2)) + 1;
+
+            if (
+              (x === doorNextPos.x && y === doorNextPos.y) ||
+              (levelNum > 1 && x === doorPrevPos.x && y === doorPrevPos.y)
+            ) {
+              i--;
+              continue;
+            }
+
+            if (data.map[y][x] === 0) data.map[y][x] = 1;
+          }
+
+          const map = data.map;
+          const reachable = new Set();
+          const stack = [[data.startPos.x, data.startPos.y]];
+          reachable.add(`${data.startPos.x},${data.startPos.y}`);
+
+          while (stack.length > 0) {
+            const [x, y] = stack.pop();
+            const neighbors = [
+              [x, y - 1],
+              [x, y + 1],
+              [x - 1, y],
+              [x + 1, y],
+            ];
+
+            for (const [nx, ny] of neighbors) {
+              if (
+                map[ny] &&
+                map[ny][nx] === 0 &&
+                !reachable.has(`${nx},${ny}`)
+              ) {
+                reachable.add(`${nx},${ny}`);
+                stack.push([nx, ny]);
+              }
+            }
+          }
+
+          for (let y = 1; y < MAP_ROWS - 1; y++) {
+            for (let x = 1; x < MAP_COLS - 1; x++) {
+              if (map[y][x] === 0 && !reachable.has(`${x},${y}`)) {
+                map[y][x] = 1;
+              }
+            }
+          }
+
+          const enemyTypes = biomeData[biomeName].enemies;
+          const numEnemies = 2 + Math.floor(levelNum / 2);
+
+          for (let i = 0; i < numEnemies; i++) {
+            let x, y;
+            do {
+              x = Math.floor(Math.random() * (MAP_COLS - 2)) + 1;
+              y = Math.floor(Math.random() * (MAP_ROWS - 2)) + 1;
+            } while (data.map[y][x] !== 0);
+
+            data.enemies.push({
+              x,
+              y,
+              type: enemyTypes[Math.floor(Math.random() * enemyTypes.length)],
+            });
+          }
+        }
+
+        return data;
+      }
+
+      function loadLevel(levelNum) {
+        gameState.currentLevelNumber = levelNum;
+        const levelData = generateLevel(levelNum);
+        gameState.currentLevelData = levelData;
+        gameState.player.x = levelData.startPos.x;
+        gameState.player.y = levelData.startPos.y;
+        gameState.enemies = levelData.enemies;
+      }
+
+      function drawTileDetails(tileType, tileColor, col, row) {
+        const x = col * TILE_SIZE;
+        const y = row * TILE_SIZE;
+        ctx.fillStyle = tileColor;
+        ctx.fillRect(x, y, TILE_SIZE, TILE_SIZE);
+
+        if (tileColor === gameState.currentLevelData.tiles["locked"]) return;
+
+        switch (tileType) {
+          case 0:
+            ctx.fillStyle = "rgba(0,0,0,0.08)";
+            ctx.beginPath();
+            ctx.arc(
+              x + TILE_SIZE / 2,
+              y + TILE_SIZE / 2,
+              TILE_SIZE / 5,
+              0,
+              2 * Math.PI
+            );
+            ctx.fill();
+            break;
+          case 1:
+            ctx.fillStyle = "rgba(0,0,0,0.15)";
+            ctx.fillRect(x, y, TILE_SIZE, TILE_SIZE);
+            ctx.strokeStyle = "rgba(0,0,0,0.1)";
+            ctx.lineWidth = 2;
+            ctx.strokeRect(x + 2, y + 2, TILE_SIZE - 4, TILE_SIZE - 4);
+            break;
+          case "next":
+          case "prev":
+            ctx.fillStyle = "rgba(0,0,0,0.2)";
+            ctx.fillRect(x + 4, y + 4, TILE_SIZE - 8, TILE_SIZE - 8);
+            break;
+        }
+      }
+
+      function drawMap() {
+        const { map, tiles } = gameState.currentLevelData;
+
+        for (let row = 0; row < MAP_ROWS; row++) {
+          for (let col = 0; col < MAP_COLS; col++) {
+            const tile = map[row][col];
+            let tileColor = tiles[tile] || tiles[0];
+
+            if (
+              (tile === "next" || tile === "prev") &&
+              gameState.enemies.length > 0
+            ) {
+              tileColor = tiles["locked"];
+            }
+
+            drawTileDetails(tile, tileColor, col, row);
+          }
+        }
+      }
+
+      function drawPlayer() {
+        const evo = evolutions[gameState.player.evolution];
+        const px = gameState.player.x * TILE_SIZE;
+        const py = gameState.player.y * TILE_SIZE;
+        const scale = evo.scale;
+
+        // Shadow
+        ctx.fillStyle = "rgba(0,0,0,0.2)";
+        ctx.beginPath();
+        ctx.ellipse(px + 16, py + 28, 10 * scale, 4 * scale, 0, 0, 2 * Math.PI);
+        ctx.fill();
+
+        // Ears
+        ctx.fillStyle = evo.earColor;
+        // Left Ear
+        ctx.beginPath();
+        ctx.moveTo(px + 10 * scale, py + 6 * scale);
+        ctx.lineTo(px + 4 * scale, py - 8 * scale);
+        ctx.lineTo(px + 16 * scale, py + 2 * scale);
+        ctx.closePath();
+        ctx.fill();
+        // Right Ear
+        ctx.beginPath();
+        ctx.moveTo(px + 22 * scale, py + 6 * scale);
+        ctx.lineTo(px + 28 * scale, py - 8 * scale);
+        ctx.lineTo(px + 16 * scale, py + 2 * scale);
+        ctx.closePath();
+        ctx.fill();
+
+        // Body
+        ctx.fillStyle = evo.color;
+        ctx.beginPath();
+        ctx.ellipse(
+          px + 16,
+          py + 16,
+          12 * scale,
+          13 * scale,
+          0,
+          0,
+          2 * Math.PI
+        );
+        ctx.fill();
+
+        // Cheeks
+        ctx.fillStyle = evo.cheekColor;
+        ctx.beginPath();
+        ctx.arc(px + 8 * scale, py + 18 * scale, 4 * scale, 0, 2 * Math.PI);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(px + 24 * scale, py + 18 * scale, 4 * scale, 0, 2 * Math.PI);
+        ctx.fill();
+
+        // Eyes
+        ctx.fillStyle = "#2D3748";
+        ctx.beginPath();
+        ctx.arc(px + 12 * scale, py + 14 * scale, 2 * scale, 0, 2 * Math.PI);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(px + 20 * scale, py + 14 * scale, 2 * scale, 0, 2 * Math.PI);
+        ctx.fill();
+
+        // Nose/Mouth
+        ctx.beginPath();
+        ctx.moveTo(px + 16, py + 16 * scale);
+        ctx.lineTo(px + 14 * scale, py + 18 * scale);
+        ctx.moveTo(px + 16, py + 16 * scale);
+        ctx.lineTo(px + 18 * scale, py + 18 * scale);
+        ctx.lineWidth = 1 * scale;
+        ctx.strokeStyle = "#2D3748";
+        ctx.stroke();
+      }
+
+      function drawEnemies() {
+        gameState.enemies.forEach((enemy) => enemySprites[enemy.type](enemy));
+      }
+
+      function drawPillars() {
+        gameState.pillars.forEach((p) => {
+          const x = p.x * TILE_SIZE,
+            y = p.y * TILE_SIZE;
+          ctx.fillStyle = "#4A5568";
+          ctx.fillRect(x + 8, y + 8, 16, 16);
+          ctx.fillStyle = p.activated ? "#F7D43B" : "#A0AEC0";
+          ctx.beginPath();
+          ctx.arc(x + 16, y + 16, 6, 0, 2 * Math.PI);
+          ctx.fill();
+
+          if (p.activated) {
+            ctx.fillStyle = `rgba(251, 211, 141, ${
+              0.5 + Math.sin(Date.now() / 150) * 0.3
+            })`;
+            ctx.beginPath();
+            ctx.arc(x + 16, y + 16, 8, 0, 2 * Math.PI);
+            ctx.fill();
+          }
+        });
+      }
+
+      function drawProjectiles() {
+        ctx.fillStyle = "#F56565";
+        gameState.projectiles.forEach((p) => {
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, 6, 0, 2 * Math.PI);
+          ctx.fill();
+        });
+      }
+
+      function updateUI() {
+        const p = gameState.player;
+        const xpToNextLevel = p.level * 100;
+
+        levelUI.textContent = p.level;
+        evolutionNameUI.textContent = evolutions[p.evolution].name;
+        healthBarUI.style.width = `${(p.hp / p.maxHp) * 100}%`;
+        xpBarUI.style.width = `${(p.xp / xpToNextLevel) * 100}%`;
+      }
+
+      function handlePlayerDefeat() {
+        showNotification("You fainted! The room has been reset.", 3000);
+        gameState.player.hp = gameState.player.maxHp;
+        loadLevel(gameState.currentLevelNumber);
+        updateUI();
+        gameState.isMoving = false;
+      }
+
+      function addXP(amount) {
+        const p = gameState.player;
+        p.xp += amount;
+        const xpToNextLevel = p.level * 100;
+
+        if (p.xp >= xpToNextLevel) {
+          p.xp -= xpToNextLevel;
+          p.level++;
+          p.maxHp += 20;
+          p.hp = p.maxHp;
+          showNotification(
+            `Level Up! You are level ${p.level}! HP restored and increased!`,
+            3000
+          );
+          checkEvolution();
+        }
+
+        updateUI();
+      }
+
+      function checkEvolution() {
+        const p = gameState.player;
+        let evolved = false;
+
+        if (p.level >= 9 && p.evolution < 3) {
+          p.evolution = 3;
+          evolved = true;
+        } else if (p.level >= 6 && p.evolution < 2) {
+          p.evolution = 2;
+          evolved = true;
+        } else if (p.level >= 3 && p.evolution < 1) {
+          p.evolution = 1;
+          evolved = true;
+        }
+
+        if (evolved) {
+          setTimeout(
+            () =>
+              showNotification(
+                `What? ${evolutions[p.evolution - 1].name} is evolving!`,
+                3000
+              ),
+            1000
+          );
+          setTimeout(() => {
+            showNotification(
+              `Congratulations! It evolved into ${
+                evolutions[p.evolution].name
+              }!`,
+              4000
+            );
+            updateUI();
+          }, 4000);
+        }
+      }
+
+      function presentQuestion() {
+        const availableQuestions = questions.filter(
+          (q) => q.level <= gameState.player.level
+        );
+
+        if (availableQuestions.length === 0) {
+          showNotification("No questions available for your level!", 3000);
+          return;
+        }
+
+        const currentQuestion =
+          availableQuestions[
+            Math.floor(Math.random() * availableQuestions.length)
+          ];
+        let questionText = currentQuestion.text;
+
+        if (
+          currentEncounter.isBossFight &&
+          gameState.bossState !== "phase1_quiz"
+        ) {
+          questionText = `[${currentEncounter.questionsAnswered + 1}/${
+            currentEncounter.questionsToWin
+          }] ${currentQuestion.text}`;
+        }
+
+        quizQuestionUI.textContent = questionText;
+        quizOptionsUI.innerHTML = "";
+
+        const shuffledOptions = [...currentQuestion.options].sort(
+          () => Math.random() - 0.5
+        );
+
+        shuffledOptions.forEach((option) => {
+          const button = document.createElement("button");
+          button.textContent = option;
+          button.className = "modal-option";
+          button.onclick = () =>
+            checkAnswer(
+              option === currentQuestion.correct,
+              currentQuestion.correct,
+              currentQuestion.level
+            );
+          quizOptionsUI.appendChild(button);
+        });
+
+        quizModal.classList.add("active");
+      }
+
+      function startEncounter(enemy, index) {
+        if (enemy.type === "boss") {
+          if (gameState.bossState === "inactive") {
+            gameState.bossState = "phase1_quiz";
+            currentEncounter = {
+              enemy,
+              index,
+              isBossFight: true,
+              questionsToWin: 1,
+              questionsAnswered: 0,
+            };
+            presentQuestion();
+          } else if (gameState.bossState === "stunned") {
+            currentEncounter = {
+              enemy,
+              index,
+              isBossFight: true,
+              questionsToWin: 2,
+              questionsAnswered: 0,
+            };
+            presentQuestion();
+          }
+          return;
+        }
+
+        gameState.isMoving = true;
+        currentEncounter = { enemy, index, isBossFight: false };
+        presentQuestion();
+      }
+
+      function checkAnswer(isCorrect, correctAnswer, questionLevel) {
+        const p = gameState.player;
+
+        if (isCorrect) {
+          // Efecto visual de respuesta correcta
+          quizModal.classList.add("pulse");
+          setTimeout(() => quizModal.classList.remove("pulse"), 500);
+
+          createParticles(
+            quizModal.offsetLeft + quizModal.offsetWidth / 2,
+            quizModal.offsetTop + quizModal.offsetHeight / 2,
+            "#4ADE80",
+            15
+          );
+        } else {
+          // Efecto visual de respuesta incorrecta
+          quizModal.classList.add("shake");
+          setTimeout(() => quizModal.classList.remove("shake"), 500);
+        }
+
+        if (currentEncounter.isBossFight) {
+          if (gameState.bossState === "phase1_quiz") {
+            if (isCorrect) {
+              showNotification("The boss grows enraged!", 2000);
+              gameState.bossState = "attacking";
+            } else {
+              showNotification(
+                `Incorrect! The answer was: ${correctAnswer}`,
+                2000
+              );
+              p.hp -= 20;
+              if (p.hp <= 0) {
+                p.hp = 0;
+                handlePlayerDefeat();
+              }
+              gameState.bossState = "inactive";
+            }
+            quizModal.classList.remove("active");
+          } else {
+            // Stunned phase quiz
+            if (isCorrect) {
+              currentEncounter.questionsAnswered++;
+              if (
+                currentEncounter.questionsAnswered >=
+                currentEncounter.questionsToWin
+              ) {
+                showNotification("Boss Defeated! +500 XP!", 3000);
+                addXP(500);
+                gameState.enemies.splice(currentEncounter.index, 1);
+                gameState.bossState = "defeated";
+                quizModal.classList.remove("active");
+                showNotification("The doors are unlocked!", 2500);
+              } else {
+                showNotification(`Direct hit!`, 1500);
+                presentQuestion();
+              }
+            } else {
+              showNotification(
+                `The boss strikes back! The answer was: ${correctAnswer}`,
+                3000
+              );
+              p.hp -= 40;
+              if (p.hp <= 0) {
+                p.hp = 0;
+                quizModal.classList.remove("active");
+                handlePlayerDefeat();
+                return;
+              }
+              updateUI();
+              presentQuestion();
+            }
+          }
+        } else {
+          // Regular enemy
+          if (isCorrect) {
+            const xpGained = 30 + questionLevel * 10;
+            showNotification(`Correct! +${xpGained} XP`, 2000);
+            addXP(xpGained);
+            p.hp = Math.min(p.maxHp, p.hp + 10);
+          } else {
+            showNotification(
+              `Incorrect! The answer was: ${correctAnswer}`,
+              3000
+            );
+            p.hp -= 25;
+            if (p.hp <= 0) {
+              p.hp = 0;
+              quizModal.classList.remove("active");
+              handlePlayerDefeat();
+              return;
+            }
+          }
+          gameState.enemies.splice(currentEncounter.index, 1);
+          quizModal.classList.remove("active");
+          gameState.isMoving = false;
+
+          if (gameState.enemies.length === 0) {
+            showNotification("The doors are unlocked!", 2500);
+          }
+        }
+
+        updateUI();
+      }
+
+      function movePlayer(dx, dy) {
+        if (gameState.isMoving || quizModal.classList.contains("active"))
+          return;
+
+        const p = gameState.player;
+        const newX = p.x + dx;
+        const newY = p.y + dy;
+        const map = gameState.currentLevelData.map;
+
+        if (
+          !map ||
+          !map[newY] ||
+          map[newY][newX] === undefined ||
+          map[newY][newX] === 1
+        )
+          return;
+
+        const tile = map[newY][newX];
+
+        if (
+          (tile === "next" || tile === "prev") &&
+          gameState.enemies.length > 0
+        ) {
+          showNotification("The doors are locked! Defeat all enemies.", 2000);
+          return;
+        }
+
+        for (let i = 0; i < gameState.enemies.length; i++) {
+          if (
+            gameState.enemies[i].x === newX &&
+            gameState.enemies[i].y === newY
+          ) {
+            startEncounter(gameState.enemies[i], i);
+            return;
+          }
+        }
+
+        p.x = newX;
+        p.y = newY;
+
+        // Check for pillar activation
+        if (gameState.bossState === "attacking") {
+          const pillar = gameState.pillars.find(
+            (pil) => pil.x === newX && pil.y === newY
+          );
+
+          if (pillar && !pillar.activated) {
+            pillar.activated = true;
+            showNotification("Pillar activated!", 1500);
+            const allActivated = gameState.pillars.every(
+              (pil) => pil.activated
+            );
+
+            if (allActivated) {
+              showNotification(
+                "All pillars activated! The boss is stunned!",
+                2500
+              );
+              gameState.bossState = "stunned";
+              gameState.projectiles = [];
+              gameState.bossStunTimer = 300;
+            }
+          }
+        }
+
+        if (tile === "next") loadLevel(gameState.currentLevelNumber + 1);
+        else if (tile === "prev" && gameState.currentLevelNumber > 1)
+          loadLevel(gameState.currentLevelNumber - 1);
+      }
+
+      function moveEnemies() {
+        const map = gameState.currentLevelData.map;
+
+        gameState.enemies.forEach((enemy) => {
+          if (enemy.type === "boss") return;
+
+          if (Math.random() < 0.2) {
+            const moves = [
+              [0, 1],
+              [0, -1],
+              [1, 0],
+              [-1, 0],
+            ];
+
+            const [dx, dy] = moves[Math.floor(Math.random() * moves.length)];
+            const newX = enemy.x + dx;
+            const newY = enemy.y + dy;
+
+            if (
+              map[newY] &&
+              map[newY][newX] === 0 &&
+              !(newX === gameState.player.x && newY === gameState.player.y)
+            ) {
+              enemy.x = newX;
+              enemy.y = newY;
+            }
+          }
+        });
+      }
+
+      function updateBoss() {
+        if (
+          gameState.currentLevelNumber % 5 !== 0 ||
+          gameState.bossState === "inactive" ||
+          gameState.bossState === "defeated"
+        )
+          return;
+
+        if (gameState.bossState === "attacking") {
+          gameState.bossAttackTimer--;
+
+          if (gameState.bossAttackTimer <= 0) {
+            const boss = gameState.enemies.find((e) => e.type === "boss");
+            if (!boss) return;
+
+            const bossX = boss.x * TILE_SIZE + 16;
+            const bossY = boss.y * TILE_SIZE + 16;
+            const playerX = gameState.player.x * TILE_SIZE + 16;
+            const playerY = gameState.player.y * TILE_SIZE + 16;
+
+            const angle = Math.atan2(playerY - bossY, playerX - bossX);
+            const speed = 2 + gameState.currentLevelNumber / 10;
+
+            gameState.projectiles.push({
+              x: bossX,
+              y: bossY,
+              dx: Math.cos(angle) * speed,
+              dy: Math.sin(angle) * speed,
+            });
+
+            gameState.bossAttackTimer = 100;
+          }
+        } else if (gameState.bossState === "stunned") {
+          gameState.bossStunTimer--;
+
+          if (gameState.bossStunTimer <= 0) {
+            showNotification(
+              "The boss recovered! The pillars have reset.",
+              3000
+            );
+            gameState.bossState = "attacking";
+            gameState.pillars.forEach((p) => (p.activated = false));
+          }
+        }
+      }
+
+      function updateProjectiles() {
+        const p = gameState.player;
+        const playerBox = {
+          left: p.x * TILE_SIZE + 4,
+          right: p.x * TILE_SIZE + TILE_SIZE - 4,
+          top: p.y * TILE_SIZE + 4,
+          bottom: p.y * TILE_SIZE + TILE_SIZE - 4,
+        };
+
+        gameState.projectiles = gameState.projectiles.filter((proj) => {
+          proj.x += proj.dx;
+          proj.y += proj.dy;
+
+          // Collision check
+          if (
+            proj.x > playerBox.left &&
+            proj.x < playerBox.right &&
+            proj.y > playerBox.top &&
+            proj.y < playerBox.bottom
+          ) {
+            p.hp -= 35;
+            showNotification("Ouch!", 1000);
+
+            if (p.hp <= 0) {
+              p.hp = 0;
+              handlePlayerDefeat();
+            }
+
+            updateUI();
+            return false;
+          }
+
+          return (
+            proj.x > 0 &&
+            proj.x < canvas.width &&
+            proj.y > 0 &&
+            proj.y < canvas.height
+          );
+        });
+      }
+
+      function gameLoop() {
+        if (!gameState.gameStarted || gameState.gamePaused) {
+          requestAnimationFrame(gameLoop);
+          return;
+        }
+
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        if (!gameState.isMoving && !quizModal.classList.contains("active")) {
+          moveEnemies();
+          updateBoss();
+          updateProjectiles();
+        }
+
+        drawMap();
+
+        if (gameState.currentLevelNumber % 5 === 0) drawPillars();
+
+        drawEnemies();
+        drawPlayer();
+        drawProjectiles();
+
+        requestAnimationFrame(gameLoop);
+      }
+
+      // ===== EVENT LISTENERS =====
+      startButton.addEventListener("click", () => {
+        resetGame();
+        startMenu.classList.remove("active");
+        showNotification("Game started! Good luck!", 2000);
+      });
+
+      continueButton.addEventListener("click", () => {
+        if (loadGame()) {
+          startMenu.classList.remove("active");
+          gameState.gameStarted = true;
+          gameState.gamePaused = false;
+          loadLevel(gameState.currentLevelNumber);
+          updateUI();
+          showNotification("Game loaded!", 2000);
+        } else {
+          showNotification("No saved game found!", 2000);
+        }
+      });
+
+      helpButton.addEventListener("click", () => {
+        showNotification(
+          "Use arrow keys to move. Touch enemies to battle them with grammar questions!",
+          5000
+        );
+      });
+
+      restartButton.addEventListener("click", () => {
+        resetGame();
+        gameOverModal.classList.remove("active");
+        showNotification("New game started!", 2000);
+      });
+
+      menuButton.addEventListener("click", () => {
+        gameOverModal.classList.remove("active");
+        startMenu.classList.add("active");
+        gameState.gameStarted = false;
+      });
+
+      document.addEventListener("keydown", (e) => {
+        if (gameState.gamePaused || !gameState.gameStarted) return;
+
+        switch (e.key) {
+          case "ArrowUp":
+            movePlayer(0, -1);
+            break;
+          case "ArrowDown":
+            movePlayer(0, 1);
+            break;
+          case "ArrowLeft":
+            movePlayer(-1, 0);
+            break;
+          case "ArrowRight":
+            movePlayer(1, 0);
+            break;
+          case "Escape":
+            gameState.gamePaused = !gameState.gamePaused;
+            showNotification(
+              gameState.gamePaused ? "Game paused" : "Game resumed",
+              1000
+            );
+            break;
+        }
+      });
+
+      // Guardar el juego periódicamente
+      setInterval(() => {
+        if (gameState.gameStarted && !gameState.gamePaused) {
+          saveGame();
+        }
+      }, 10000);
+
+      // ===== INICIALIZACIÓN =====
+      function init() {
+        // Verificar si hay una partida guardada
+        if (loadGame()) {
+          continueButton.style.display = "block";
+        } else {
+          continueButton.style.display = "none";
+        }
+
+        loadLevel(gameState.currentLevelNumber);
+        updateUI();
+
+        // Iniciar bucle del juego
+        gameLoop();
+      }
+
+      // Iniciar el juego
+      init();
+    </script>
+  </body>
+</html>
